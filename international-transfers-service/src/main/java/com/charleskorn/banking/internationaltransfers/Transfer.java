@@ -44,4 +44,8 @@ public class Transfer {
     public BigDecimal getExchangeRate() {
         return exchangeRate;
     }
+
+    public BigDecimal getConvertedAmount() {
+        return this.originalAmount.multiply(this.exchangeRate);
+    }
 }
