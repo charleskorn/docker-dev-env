@@ -24,6 +24,13 @@ As this is just an example of a service with a full test environment, a number o
 * Nothing is configurable (eg. port used for HTTP and database connection string are hard-coded)
 * The database schema is hardcoded into the database Docker container (ideally some kind of schema migrations system would be in place)
 * There are no consumer-driven contract tests in place
+* Many of the unit and integration tests are very simple, and many test cases are missing
+* Many things could be more efficient or done in a more maintainable way
+
+## Areas for improvement
+
+* At the moment, if one of the dependent services (eg. exchange-rate-service-fake) fails to start, the integration tests
+  continue along anyway, which causes them to fail. 
 
 ## Links
 

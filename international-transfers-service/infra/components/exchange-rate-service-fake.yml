@@ -1,0 +1,5 @@
+version: '2.1'
+
+services:
+  exchange-rate-service:
+    build: exchange-rate-service-fake

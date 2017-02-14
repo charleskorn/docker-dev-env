@@ -6,10 +6,25 @@ services:
       file: components/database.yml
       service: database
 
+  exchange-rate-service:
+    extends:
+      file: components/exchange-rate-service-fake.yml
+      service: exchange-rate-service
+
+  # This is a hack to workaround an issue with docker-compose run, which does not correctly honour
+  # dependencies and waiting for health checks (see https://github.com/docker/compose/issues/4369)
+  dependencies-hack:
+    image: alpine:3.5
+    entrypoint: /bin/sh
+    depends_on:
+      database:
+        condition: service_healthy
+      exchange-rate-service:
+        condition: service_healthy
+
   build-env:
     extends:
       file: components/build-env.yml
       service: build-env
     depends_on:
-      database:
-        condition: service_healthy
+      - dependencies-hack
