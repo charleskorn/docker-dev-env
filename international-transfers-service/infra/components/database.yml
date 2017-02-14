@@ -1,0 +1,9 @@
+version: '2.1'
+
+services:
+  database:
+    build: database
+    environment:
+      - POSTGRES_USER=international-transfers-service
+      - POSTGRES_PASSWORD=TheSuperSecretPassword
+      - POSTGRES_DB=international-transfers-service

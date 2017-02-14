@@ -5,6 +5,7 @@ import com.charleskorn.banking.internationaltransfers.services.ExchangeRateServi
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -16,7 +17,7 @@ import static org.mockito.Mockito.*;
 
 public class TransferServiceTest {
     @Test
-    public void createTransfer_happyPath_retrievesExchangeRateAndSavesTransferToDatabase() {
+    public void createTransfer_happyPath_retrievesExchangeRateAndSavesTransferToDatabase() throws SQLException {
         Database database = mock(Database.class);
         ExchangeRateService exchangeRateService = mock(ExchangeRateService.class);
         TransferService service = new TransferService(database, exchangeRateService);
@@ -27,19 +28,14 @@ public class TransferServiceTest {
         BigDecimal originalAmount = new BigDecimal("12.30");
         BigDecimal exchangeRate = new BigDecimal("1.2");
         UUID id = UUID.fromString("88888888-4444-4444-4444-121212121212");
+        Transfer createdTransfer = new Transfer(id, fromCurrency, toCurrency, transferDate, originalAmount, exchangeRate);
 
         when(exchangeRateService.getExchangeRate(fromCurrency, toCurrency, LocalDate.of(2017, 2, 13))).thenReturn(exchangeRate);
-        when(database.saveTransfer(fromCurrency, toCurrency, transferDate, originalAmount, exchangeRate)).thenReturn(id);
+        when(database.saveTransfer(fromCurrency, toCurrency, transferDate, originalAmount, exchangeRate)).thenReturn(createdTransfer);
 
-        Transfer createdTransfer = service.createTransfer(fromCurrency, toCurrency, transferDate, originalAmount);
+        Transfer returnedTransfer = service.createTransfer(fromCurrency, toCurrency, transferDate, originalAmount);
 
         verify(database).saveTransfer(fromCurrency, toCurrency, transferDate, originalAmount, exchangeRate);
-
-        assertThat(createdTransfer.getId(), is(id));
-        assertThat(createdTransfer.getFromCurrency(), is(fromCurrency));
-        assertThat(createdTransfer.getToCurrency(), is(toCurrency));
-        assertThat(createdTransfer.getTransferDate(), is(transferDate));
-        assertThat(createdTransfer.getOriginalAmount(), is(originalAmount));
-        assertThat(createdTransfer.getExchangeRate(), is(exchangeRate));
+        assertThat(returnedTransfer, is(createdTransfer));
     }
 }

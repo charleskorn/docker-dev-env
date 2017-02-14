@@ -3,11 +3,6 @@
 set -e
 
 SOURCE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-GRADLE_CACHE_DIR=$SOURCE_DIR/_caches/gradle
-
-# Create an image name based on the source directory so we know we're referring to the one that applies to this codebase
-IMAGE_NAME=`echo "dev-env${SOURCE_DIR//\//-}" | awk '{print tolower($0)}'`
-IMAGE_TAG="$IMAGE_NAME:latest"
 
 function main {
   case "$1" in
@@ -18,11 +13,8 @@ function main {
   integrationTest) integrationTest;;
   journeyTest) journeyTest;;
   ci) ci;;
-  run) run;;
   runWithFakes) runWithFakes;;
   runWithReals) runWithReals;;
-  startFakes) startFakes;;
-  startReals) startReals;;
   *)
     help
     exit 1
@@ -39,11 +31,8 @@ function help {
   echo " integrationTest        runs the integration test suite"
   echo " journeyTest            runs the journey test suite"
   echo " ci                     equivalent to running build, unitTest, integrationTest and journeyTest"
-  echo " run                    builds and starts the application (but does not start any dependencies)"
   echo " runWithFakes           builds and starts the application with fake dependencies"
   echo " runWithReals           builds and starts the application with real dependencies"
-  echo " startFakes             starts fake dependencies but not the application"
-  echo " startReals             starts real dependencies but not the application"
 }
 
 function build {
@@ -59,6 +48,10 @@ function continuousUnitTest {
   runGradle --continuous test
 }
 
+function integrationTest {
+  runCommandInBuildContainer $SOURCE_DIR/infra/integration-test.yml build-env ./gradlew integrationTest
+}
+
 function ci {
   build
   unitTest
@@ -66,37 +59,42 @@ function ci {
   journeyTest
 }
 
-function runGradle {
-  createCacheDirectories
-  runCommandInBuildContainer ./gradlew $@
-}
-
 function checkForDocker {
   hash docker 2>/dev/null || { echo >&2 "This script requires Docker, but it's not installed or not on your PATH."; exit 1; }
 }
 
-function buildImage {
-  echoWhiteText "Building development environment container image..."
-  docker build --tag "$IMAGE_TAG" "$SOURCE_DIR/dev-env"
+function runGradle {
+  runCommandInBareBuildContainer ./gradlew $@
 }
 
-function createCacheDirectories {
-  mkdir -p "$GRADLE_CACHE_DIR"
+function runCommandInBareBuildContainer {
+  runCommandInBuildContainer $SOURCE_DIR/infra/components/build-env.yml build-env $@
 }
 
 function runCommandInBuildContainer {
   checkForDocker
-  buildImage
 
-  echoWhiteText "Running '$@' in container..."
+  env=$1
+  service=$2
+  command=${@:3}
 
-  docker run --rm -it \
-    -w /code \
-    -v $SOURCE_DIR:/code \
-    -v $GRADLE_CACHE_DIR:/root/.gradle \
-    -e GRADLE_OPTS="-Dorg.gradle.daemon=false" \
-    "$IMAGE_TAG" \
-    $@
+  echoWhiteText 'Building environment...'
+  docker-compose -f $env build
+
+  echoWhiteText 'Cleaning up from previous runs...'
+  docker-compose -f $env down --volumes --remove-orphans
+
+  echoWhiteText "Running '$command'..."
+  docker-compose -f $env run --rm $service $command || (cleanUp $env && exit 1)
+
+  cleanUp $env
+}
+
+function cleanUp {
+  env=$1
+
+  echoWhiteText 'Cleaning up...'
+  docker-compose -f $env down --volumes --remove-orphans
 }
 
 function echoWhiteText {

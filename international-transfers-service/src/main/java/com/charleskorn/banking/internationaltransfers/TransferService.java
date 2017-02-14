@@ -5,8 +5,8 @@ import com.charleskorn.banking.internationaltransfers.services.ExchangeRateServi
 import com.google.inject.Inject;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.time.OffsetDateTime;
-import java.util.UUID;
 
 public class TransferService {
     private final Database database;
@@ -20,8 +20,11 @@ public class TransferService {
 
     public Transfer createTransfer(String fromCurrency, String toCurrency, OffsetDateTime transferDate, BigDecimal originalAmount) {
         BigDecimal exchangeRate = this.exchangeRateService.getExchangeRate(fromCurrency, toCurrency, transferDate.toLocalDate());
-        UUID id = this.database.saveTransfer(fromCurrency, toCurrency, transferDate, originalAmount, exchangeRate);
 
-        return new Transfer(id, fromCurrency, toCurrency, transferDate, originalAmount, exchangeRate);
+        try {
+            return this.database.saveTransfer(fromCurrency, toCurrency, transferDate, originalAmount, exchangeRate);
+        } catch (SQLException e) {
+            throw new RuntimeException("Could not save transfer.", e);
+        }
     }
 }

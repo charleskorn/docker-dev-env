@@ -1,0 +1,15 @@
+version: '2.1'
+
+services:
+  database:
+    extends:
+      file: components/database.yml
+      service: database
+
+  build-env:
+    extends:
+      file: components/build-env.yml
+      service: build-env
+    depends_on:
+      database:
+        condition: service_healthy

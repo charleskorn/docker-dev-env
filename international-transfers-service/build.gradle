@@ -9,7 +9,9 @@ repositories {
 
 dependencies {
     compile 'com.google.inject:guice:4.1.0'
+    compile 'org.postgresql:postgresql:9.4.1212'
     testCompile 'junit:junit:4.12'
+    testCompile 'org.hamcrest:java-hamcrest:2.0.0.0'
     testCompile 'org.mockito:mockito-core:2.7.1'
 }
 

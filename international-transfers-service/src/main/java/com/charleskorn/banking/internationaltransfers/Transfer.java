@@ -48,4 +48,42 @@ public class Transfer {
     public BigDecimal getConvertedAmount() {
         return this.originalAmount.multiply(this.exchangeRate);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Transfer transfer = (Transfer) o;
+
+        if (!id.equals(transfer.id)) return false;
+        if (!fromCurrency.equals(transfer.fromCurrency)) return false;
+        if (!toCurrency.equals(transfer.toCurrency)) return false;
+        if (!transferDate.equals(transfer.transferDate)) return false;
+        if (!originalAmount.equals(transfer.originalAmount)) return false;
+        return exchangeRate.equals(transfer.exchangeRate);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id.hashCode();
+        result = 31 * result + fromCurrency.hashCode();
+        result = 31 * result + toCurrency.hashCode();
+        result = 31 * result + transferDate.hashCode();
+        result = 31 * result + originalAmount.hashCode();
+        result = 31 * result + exchangeRate.hashCode();
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Transfer{" +
+                "id=" + id +
+                ", fromCurrency='" + fromCurrency + '\'' +
+                ", toCurrency='" + toCurrency + '\'' +
+                ", transferDate=" + transferDate +
+                ", originalAmount=" + originalAmount +
+                ", exchangeRate=" + exchangeRate +
+                '}';
+    }
 }

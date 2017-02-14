@@ -1,0 +1,11 @@
+version: '2.1'
+
+services:
+  build-env:
+    build: build-env
+    environment:
+      - GRADLE_OPTS=-Dorg.gradle.daemon=false
+    working_dir: /code
+    volumes:
+      - ../../:/code
+      - ../../_caches/gradle:/root/.gradle
