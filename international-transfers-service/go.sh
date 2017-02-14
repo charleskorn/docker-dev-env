@@ -3,6 +3,7 @@
 set -e
 
 SOURCE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DOCKER_IMAGE_TAG="international-transfers-service:latest"
 
 function main {
   case "$1" in
@@ -36,11 +37,16 @@ function help {
 }
 
 function build {
-  runGradle assemble
-  echo "TODO: build Docker image"
+  echoGreenText 'Building application...'
+  runGradle assembleDist
+
+  echoWhiteText 'Building Docker image...'
+  cp $SOURCE_DIR/build/distributions/international-transfers-service.zip $SOURCE_DIR/infra/components/international-transfers-service/app.zip
+  docker build --tag $DOCKER_IMAGE_TAG $SOURCE_DIR/infra/components/international-transfers-service
 }
 
 function unitTest {
+  echoGreenText 'Running unit tests...'
   runGradle test
 }
 
@@ -49,7 +55,15 @@ function continuousUnitTest {
 }
 
 function integrationTest {
+  echoGreenText 'Running integration tests...'
   runCommandInBuildContainer $SOURCE_DIR/infra/integration-test.yml build-env ./gradlew integrationTest
+}
+
+function journeyTest {
+  build
+
+  echoGreenText 'Running journey tests...'
+  runCommandInBuildContainer $SOURCE_DIR/infra/journey-test.yml build-env ./gradlew journeyTest
 }
 
 function ci {
@@ -85,9 +99,15 @@ function runCommandInBuildContainer {
   docker-compose -f $env down --volumes --remove-orphans
 
   echoWhiteText "Running '$command'..."
-  docker-compose -f $env run --rm $service $command || (cleanUp $env && exit 1)
+  docker-compose -f $env run --rm $service $command || cleanUpAfterFailure
 
   cleanUp $env
+}
+
+function cleanUpAfterFailure {
+  # TODO You might like to always clean up if you're running on CI.
+  echoRedText 'Command failed. Containers will not be cleaned up to make debugging this issue easier.'
+  exit 1
 }
 
 function cleanUp {
@@ -95,6 +115,20 @@ function cleanUp {
 
   echoWhiteText 'Cleaning up...'
   docker-compose -f $env down --volumes --remove-orphans
+}
+
+function echoGreenText {
+  RESET=$(tput sgr0)
+  GREEN=$(tput setaf 2)
+
+  echo "${GREEN}${@}${RESET}"
+}
+
+function echoRedText {
+  RESET=$(tput sgr0)
+  RED=$(tput setaf 1)
+
+  echo "${RED}${@}${RESET}"
 }
 
 function echoWhiteText {

@@ -26,6 +26,7 @@ As this is just an example of a service with a full test environment, a number o
 * There are no consumer-driven contract tests in place
 * Many of the unit and integration tests are very simple, and many test cases are missing
 * Many things could be more efficient or done in a more maintainable way
+* No dependency injection framework, everything is done by hand
 
 ## Areas for improvement
 

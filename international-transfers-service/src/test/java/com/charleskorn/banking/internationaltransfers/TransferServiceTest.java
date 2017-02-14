@@ -4,6 +4,7 @@ import com.charleskorn.banking.internationaltransfers.persistence.Database;
 import com.charleskorn.banking.internationaltransfers.services.ExchangeRateService;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -17,7 +18,7 @@ import static org.mockito.Mockito.*;
 
 public class TransferServiceTest {
     @Test
-    public void createTransfer_happyPath_retrievesExchangeRateAndSavesTransferToDatabase() throws SQLException {
+    public void createTransfer_happyPath_retrievesExchangeRateAndSavesTransferToDatabase() throws SQLException, IOException {
         Database database = mock(Database.class);
         ExchangeRateService exchangeRateService = mock(ExchangeRateService.class);
         TransferService service = new TransferService(database, exchangeRateService);
@@ -28,14 +29,15 @@ public class TransferServiceTest {
         BigDecimal originalAmount = new BigDecimal("12.30");
         BigDecimal exchangeRate = new BigDecimal("1.2");
         UUID id = UUID.fromString("88888888-4444-4444-4444-121212121212");
+        TransferRequest request = new TransferRequest(fromCurrency, toCurrency, transferDate, originalAmount);
         Transfer createdTransfer = new Transfer(id, fromCurrency, toCurrency, transferDate, originalAmount, exchangeRate);
 
         when(exchangeRateService.getExchangeRate(fromCurrency, toCurrency, LocalDate.of(2017, 2, 13))).thenReturn(exchangeRate);
-        when(database.saveTransfer(fromCurrency, toCurrency, transferDate, originalAmount, exchangeRate)).thenReturn(createdTransfer);
+        when(database.saveTransfer(request, exchangeRate)).thenReturn(createdTransfer);
 
-        Transfer returnedTransfer = service.createTransfer(fromCurrency, toCurrency, transferDate, originalAmount);
+        Transfer returnedTransfer = service.createTransfer(request);
 
-        verify(database).saveTransfer(fromCurrency, toCurrency, transferDate, originalAmount, exchangeRate);
+        verify(database).saveTransfer(request, exchangeRate);
         assertThat(returnedTransfer, is(createdTransfer));
     }
 }

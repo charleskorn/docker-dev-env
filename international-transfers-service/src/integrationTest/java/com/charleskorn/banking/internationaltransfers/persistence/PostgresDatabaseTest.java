@@ -1,6 +1,7 @@
 package com.charleskorn.banking.internationaltransfers.persistence;
 
 import com.charleskorn.banking.internationaltransfers.Transfer;
+import com.charleskorn.banking.internationaltransfers.TransferRequest;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -24,8 +25,8 @@ public class PostgresDatabaseTest {
 
         OffsetDateTime transfer1Time = OffsetDateTime.of(2017, 1, 2, 3, 4, 5, 0, ZoneOffset.UTC);
         OffsetDateTime transfer2Time = OffsetDateTime.of(2017, 6, 7, 8, 9, 10, 0, ZoneOffset.UTC);
-        Transfer transfer1 = database.saveTransfer("AUD", "EUR", transfer1Time, new BigDecimal("12.50"), new BigDecimal("0.5"));
-        Transfer transfer2 = database.saveTransfer("EUR", "USD", transfer2Time, new BigDecimal("100.30"), new BigDecimal("1.1"));
+        Transfer transfer1 = database.saveTransfer(new TransferRequest("AUD", "EUR", transfer1Time, new BigDecimal("12.50")), new BigDecimal("0.5"));
+        Transfer transfer2 = database.saveTransfer(new TransferRequest("EUR", "USD", transfer2Time, new BigDecimal("100.30")), new BigDecimal("1.1"));
 
         List<Transfer> transfersAfterSaving = database.getAllTransfers();
         assertThat(transfersAfterSaving, containsInAnyOrder(transfer1, transfer2));

@@ -1,6 +1,7 @@
 package com.charleskorn.banking.internationaltransfers.persistence;
 
 import com.charleskorn.banking.internationaltransfers.Transfer;
+import com.charleskorn.banking.internationaltransfers.TransferRequest;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -16,20 +17,20 @@ public class PostgresDatabase implements Database {
             "&ssl=false";
 
     @Override
-    public Transfer saveTransfer(String fromCurrency, String toCurrency, OffsetDateTime transferDate, BigDecimal originalAmount, BigDecimal exchangeRate) throws SQLException {
+    public Transfer saveTransfer(TransferRequest request, BigDecimal exchangeRate) throws SQLException {
         try (Connection conn = getConnection()) {
             try (PreparedStatement st = conn.prepareStatement("INSERT INTO transfers (id, from_currency, to_currency, transfer_date, original_amount, exchange_rate) VALUES(?, ?, ?, ?, ?, ?);")) {
                 UUID id = UUID.randomUUID();
 
                 st.setObject(1, id);
-                st.setString(2, fromCurrency);
-                st.setString(3, toCurrency);
-                st.setObject(4, transferDate);
-                st.setBigDecimal(5, originalAmount);
+                st.setString(2, request.getFromCurrency());
+                st.setString(3, request.getToCurrency());
+                st.setObject(4, request.getTransferDate());
+                st.setBigDecimal(5, request.getOriginalAmount());
                 st.setBigDecimal(6, exchangeRate);
                 st.executeUpdate();
 
-                return new Transfer(id, fromCurrency, toCurrency, transferDate, originalAmount, exchangeRate);
+                return new Transfer(id, request.getFromCurrency(), request.getToCurrency(), request.getTransferDate(), request.getOriginalAmount(), exchangeRate);
             }
         }
     }

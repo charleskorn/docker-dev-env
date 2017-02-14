@@ -2,19 +2,23 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 apply plugin: 'java'
+apply plugin: 'application'
 
 repositories {
     jcenter()
 }
 
 dependencies {
-    compile 'com.google.inject:guice:4.1.0'
+    compile 'com.sparkjava:spark-core:2.5.5'
+    compile 'org.slf4j:slf4j-simple:1.7.22'
     compile 'org.postgresql:postgresql:9.4.1212'
     compile 'com.squareup.okhttp3:okhttp:3.6.0'
     compile 'com.google.code.gson:gson:2.8.0'
+    compile 'net.dongliu:gson-java8-datatype:1.0.2'
     testCompile 'junit:junit:4.12'
     testCompile 'org.hamcrest:java-hamcrest:2.0.0.0'
     testCompile 'org.mockito:mockito-core:2.7.1'
+    testCompile 'com.jayway.jsonpath:json-path-assert:2.2.0'
 }
 
 sourceSets {
@@ -63,3 +67,5 @@ task journeyTest(type: Test) {
 }
 
 check.dependsOn integrationTest, journeyTest
+
+mainClassName = 'com.charleskorn.banking.internationaltransfers.Application'
