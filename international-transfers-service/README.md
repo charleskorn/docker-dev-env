@@ -1,5 +1,11 @@
 # international-transfers-service
 
+A sample service with two dependencies (a database and another service) with a Docker-based build and Docker-based test environments.
+
+## Building, testing, running etc.
+
+Run `./go.sh help` to see the available commands and their descriptions.
+
 ## Tests
 
 There are three kinds of tests:
