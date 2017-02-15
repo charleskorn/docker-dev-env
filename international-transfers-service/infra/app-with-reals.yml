@@ -7,9 +7,8 @@ services:
       service: database
 
   exchange-rate-service:
-    extends:
-      file: components/exchange-rate-service-fake.yml
-      service: exchange-rate-service
+    # This could come from a remote repository.
+    image: exchange-rate-service:latest
     # This isn't strictly necessary but it's useful for debugging.
     ports:
      - "6000:6000"

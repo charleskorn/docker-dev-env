@@ -36,7 +36,9 @@ public class Application {
     private static ExchangeRate getExchangeRate(String from, String to, int year, int month, int day) {
         int multiplier = (from.hashCode() ^ to.hashCode()) % 100;
         double positionInYear = year * 365 + month * 31 + day; // Ugly hack but it's close enough
-        BigDecimal rate = BigDecimal.valueOf(multiplier * 0.1 * (1.1 + Math.sin(positionInYear / (2 * Math.PI * 365))));
+        BigDecimal rate = BigDecimal
+                .valueOf(multiplier * 0.1 * (1.1 + Math.sin(positionInYear / (2 * Math.PI * 365))))
+                .setScale(5, BigDecimal.ROUND_CEILING);
 
         return new ExchangeRate(from, to, year, month, day, rate);
     }

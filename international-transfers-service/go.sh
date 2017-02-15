@@ -77,6 +77,10 @@ function runWithFakes {
   runEnvironment $SOURCE_DIR/infra/app-with-fakes.yml
 }
 
+function runWithReals {
+  runEnvironment $SOURCE_DIR/infra/app-with-reals.yml
+}
+
 function checkForDocker {
   hash docker 2>/dev/null || { echo >&2 "This script requires Docker, but it's not installed or not on your PATH."; exit 1; }
 }
