@@ -17,6 +17,7 @@ public class ExchangeRateService {
         OkHttpClient client = new OkHttpClient();
 
         HttpUrl url = HttpUrl.parse(serviceUrl).newBuilder()
+                .addPathSegment("exchangerate")
                 .addPathSegment(fromCurrency)
                 .addPathSegment(toCurrency)
                 .addPathSegment(String.valueOf(effectiveDate.getYear()))

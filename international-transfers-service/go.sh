@@ -73,6 +73,10 @@ function ci {
   journeyTest
 }
 
+function runWithFakes {
+  runEnvironment $SOURCE_DIR/infra/app-with-fakes.yml
+}
+
 function checkForDocker {
   hash docker 2>/dev/null || { echo >&2 "This script requires Docker, but it's not installed or not on your PATH."; exit 1; }
 }
@@ -100,6 +104,20 @@ function runCommandInBuildContainer {
 
   echoWhiteText "Running '$command'..."
   docker-compose -f $env run --rm $service $command || cleanUpAfterFailure
+
+  cleanUp $env
+}
+
+function runEnvironment {
+  checkForDocker
+
+  env=$1
+
+  echoWhiteText 'Cleaning up from previous runs...'
+  docker-compose -f $env down --volumes --remove-orphans
+
+  echoWhiteText "Starting environment..."
+  docker-compose -f $env up --force-recreate --build --abort-on-container-exit --remove-orphans || cleanUp $env
 
   cleanUp $env
 }

@@ -1,0 +1,28 @@
+version: '2.1'
+
+services:
+  database:
+    extends:
+      file: components/database.yml
+      service: database
+
+  exchange-rate-service:
+    extends:
+      file: components/exchange-rate-service-fake.yml
+      service: exchange-rate-service
+    ports:
+     - "6000:6000"
+
+  international-transfers-service:
+    extends:
+      file: components/international-transfers-service.yml
+      service: international-transfers-service
+    ports:
+      - "6001:6001"
+    # Ideally we'd put these dependency definitions in the international-transfers-service.yml file, but
+    # that isn't supported by Docker Compose... sigh
+    depends_on:
+      database:
+        condition: service_healthy
+      exchange-rate-service:
+        condition: service_healthy
