@@ -10,4 +10,4 @@ services:
       - ../../:/code
       - ../../_caches/gradle:/root/.gradle
     ports:
-      - "5005:5005"
+      - "5005:5005" # For JVM debugging
