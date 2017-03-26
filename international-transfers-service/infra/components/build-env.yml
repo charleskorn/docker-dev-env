@@ -9,3 +9,5 @@ services:
     volumes:
       - ../../:/code
       - ../../_caches/gradle:/root/.gradle
+    ports:
+      - "5005:5005"

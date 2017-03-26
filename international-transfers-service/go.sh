@@ -9,10 +9,10 @@ function main {
   case "$1" in
 
   build) build;;
-  unitTest) unitTest;;
-  continuousUnitTest) continuousUnitTest;;
-  integrationTest) integrationTest;;
-  journeyTest) journeyTest;;
+  unitTest) unitTest "${@:2}";;
+  continuousUnitTest) continuousUnitTest "${@:2}";;
+  integrationTest) integrationTest "${@:2}";;
+  journeyTest) journeyTest "${@:2}";;
   ci) ci;;
   runWithFakes) runWithFakes;;
   runWithReals) runWithReals;;
@@ -34,6 +34,13 @@ function help {
   echo " ci                     equivalent to running build, unitTest, integrationTest and journeyTest"
   echo " runWithFakes           builds and starts the application with fake dependencies"
   echo " runWithReals           builds and starts the application with real dependencies"
+  echo
+  echo "For all test targets, additional Gradle flags can be passed after the target name, for example:"
+  echo " ./go.sh unitTest --debug-jvm"
+  echo
+  echo "Useful Gradle flags include:"
+  echo " --debug-jvm            wait for a debugger to attach before running the tests"
+  echo " --rerun-tasks          force tasks to be rerun even if they are up-to-date (handy for debugging unit tests)"
 }
 
 function build {
@@ -47,23 +54,23 @@ function build {
 
 function unitTest {
   echoGreenText 'Running unit tests...'
-  runGradle test
+  runGradle test "$@"
 }
 
 function continuousUnitTest {
-  runGradle --continuous test
+  runGradle --continuous test "$@"
 }
 
 function integrationTest {
   echoGreenText 'Running integration tests...'
-  runCommandInBuildContainer $SOURCE_DIR/infra/integration-test.yml build-env ./gradlew integrationTest
+  runCommandInBuildContainer $SOURCE_DIR/infra/integration-test.yml build-env ./gradlew integrationTest "$@"
 }
 
 function journeyTest {
   build
 
   echoGreenText 'Running journey tests...'
-  runCommandInBuildContainer $SOURCE_DIR/infra/journey-test.yml build-env ./gradlew journeyTest
+  runCommandInBuildContainer $SOURCE_DIR/infra/journey-test.yml build-env ./gradlew journeyTest "$@"
 }
 
 function ci {
@@ -86,11 +93,11 @@ function checkForDocker {
 }
 
 function runGradle {
-  runCommandInBareBuildContainer ./gradlew $@
+  runCommandInBareBuildContainer ./gradlew "$@"
 }
 
 function runCommandInBareBuildContainer {
-  runCommandInBuildContainer $SOURCE_DIR/infra/components/build-env.yml build-env $@
+  runCommandInBuildContainer $SOURCE_DIR/infra/components/build-env.yml build-env "$@"
 }
 
 function runCommandInBuildContainer {
@@ -107,7 +114,7 @@ function runCommandInBuildContainer {
   docker-compose -f $env down --volumes --remove-orphans
 
   echoWhiteText "Running '$command'..."
-  docker-compose -f $env run --rm $service $command || cleanUpAfterFailure
+  docker-compose -f $env run --service-ports --rm $service $command || cleanUpAfterFailure
 
   cleanUp $env
 }
