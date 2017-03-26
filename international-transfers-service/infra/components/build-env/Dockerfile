@@ -1,6 +1,7 @@
-FROM ubuntu:16.10
+FROM alpine:3.5
 
-ENV DEBIAN_FRONTEND noninteractive
-
-RUN apt-get update && apt-get install -y \
-	openjdk-8-jdk=8u121-b13-0ubuntu1.16.10.2
+# ncurses is required for Gradle's prettier console output mode
+RUN apk add --update --no-cache \
+      openjdk8=8.121.13-r0 \
+      ncurses5-libs=5.9-r1 \
+      ncurses-terminfo=6.0-r7
